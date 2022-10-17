@@ -9,20 +9,26 @@ from framework import utils
 
 SUCCESS_CODE = 0
 MACHINE = platform.machine()
-TARGETS = ["{}-unknown-linux-gnu".format(MACHINE),
-           "{}-unknown-linux-musl".format(MACHINE)]
+TARGETS = [
+    "{}-unknown-linux-gnu".format(MACHINE),
+    "{}-unknown-linux-musl".format(MACHINE),
+]
 
 
-@pytest.mark.parametrize(
-    "target",
-    TARGETS
-)
+@pytest.mark.parametrize("target", TARGETS)
 def test_rust_clippy(target):
     """
     Test that clippy does not generate any errors/warnings.
 
     @type: build
     """
+    deny = [
+        "warnings",
+        "clippy::undocumented_unsafe_blocks",
+    ]
+    deny_flags = " ".join(map("--deny {}".format, deny))
+
     utils.run_cmd(
-        'cargo clippy --target {} --all --profile test'
-        ' -- -D warnings'.format(target))
+        "cargo clippy --target {} --all --profile test"
+        " -- {deny_flags}".format(target, deny_flags=deny_flags)
+    )
