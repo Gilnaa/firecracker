@@ -104,6 +104,7 @@ impl BrandString {
     /// of the host CPU.
     pub fn from_host_cpuid() -> Result<Self, Error> {
         let mut this = Self::new();
+        // SAFETY: This is safe since the parameters are valid.
         let mut cpuid_regs = unsafe { host_cpuid(0x8000_0000) };
 
         if cpuid_regs.eax < 0x8000_0004 {
@@ -112,6 +113,7 @@ impl BrandString {
         }
 
         for leaf in 0x8000_0002..=0x8000_0004 {
+            // SAFETY: This is safe since the parameters are valid.
             cpuid_regs = unsafe { host_cpuid(leaf) };
             this.set_reg_for_leaf(leaf, Reg::Eax, cpuid_regs.eax);
             this.set_reg_for_leaf(leaf, Reg::Ebx, cpuid_regs.ebx);
@@ -161,7 +163,7 @@ impl BrandString {
     /// Gets an immutable `u8` slice view into the brand string buffer.
     #[inline]
     fn as_bytes(&self) -> &[u8] {
-        // This is actually safe, because self.reg_buf has a fixed, known size,
+        // SAFETY: This is actually safe, because self.reg_buf has a fixed, known size,
         // and also there's no risk of misalignment, since we're downgrading
         // alignment constraints from dword to byte.
         unsafe { slice::from_raw_parts(self.reg_buf.as_ptr() as *const u8, Self::REG_BUF_SIZE * 4) }
@@ -170,6 +172,8 @@ impl BrandString {
     /// Gets a mutable `u8` slice view into the brand string buffer.
     #[inline]
     fn as_bytes_mut(&mut self) -> &mut [u8] {
+        // SAFETY: This is also safe for the same reasons as the non-mut version.
+        // Returned mut reference is exclusive because the mut self reference is also exclusive.
         unsafe {
             slice::from_raw_parts_mut(self.reg_buf.as_mut_ptr() as *mut u8, Self::REG_BUF_SIZE * 4)
         }
@@ -306,6 +310,7 @@ fn null_terminator_index(slice: &[u8]) -> usize {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::undocumented_unsafe_blocks)]
     use std::iter::repeat;
 
     use super::*;
