@@ -531,6 +531,7 @@ impl VcpuState {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::undocumented_unsafe_blocks)]
     extern crate cpuid;
 
     use std::os::unix::io::AsRawFd;
