@@ -12,6 +12,7 @@
 //! For more information on io_uring, refer to the man pages.
 //! [This pdf](https://kernel.dk/io_uring.pdf) is also very useful, though outdated at times.
 
+#[allow(clippy::undocumented_unsafe_blocks)]
 mod bindings;
 pub mod operation;
 mod probe;
@@ -124,7 +125,7 @@ impl IoUring {
             ..Default::default()
         };
 
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         let fd = SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_setup,
@@ -135,7 +136,7 @@ impl IoUring {
         .into_result()
         .map_err(Error::Setup)? as i32;
 
-        // Safe because the fd is valid and because this struct owns the fd.
+        // SAFETY: Safe because the fd is valid and because this struct owns the fd.
         let file = unsafe { File::from_raw_fd(fd) };
 
         Self::check_features(params)?;
@@ -244,7 +245,7 @@ impl IoUring {
     }
 
     fn enable(&mut self) -> Result<()> {
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_register,
@@ -269,7 +270,7 @@ impl IoUring {
             return Err(Error::RegisterFileLimitExceeded);
         }
 
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_register,
@@ -293,7 +294,7 @@ impl IoUring {
     }
 
     fn register_eventfd(&self, fd: RawFd) -> Result<()> {
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_register,
@@ -312,7 +313,7 @@ impl IoUring {
             // No-op.
             return Ok(());
         }
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_register,
@@ -348,7 +349,7 @@ impl IoUring {
     fn check_operations(&self) -> Result<()> {
         let mut probes = ProbeWrapper::new(PROBE_LEN).map_err(Error::Fam)?;
 
-        // Safe because values are valid and we check the return value.
+        // SAFETY: Safe because values are valid and we check the return value.
         SyscallReturnCode(unsafe {
             libc::syscall(
                 libc::SYS_io_uring_register,
@@ -380,6 +381,7 @@ impl IoUring {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::undocumented_unsafe_blocks)]
     use std::os::unix::fs::FileExt;
 
     use proptest::prelude::*;

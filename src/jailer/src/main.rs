@@ -356,7 +356,7 @@ fn sanitize_process() {
             let fd = fd_str.parse::<i32>().unwrap_or(0);
 
             if fd > 2 {
-                // Safe because close() cannot fail when passed a valid parameter.
+                // SAFETY: Safe because close() cannot fail when passed a valid parameter.
                 unsafe { libc::close(fd) };
             }
         }
@@ -433,6 +433,7 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    #![allow(clippy::undocumented_unsafe_blocks)]
     use std::env;
     use std::fs::File;
     use std::os::unix::io::IntoRawFd;
